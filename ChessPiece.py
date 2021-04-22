@@ -1,8 +1,14 @@
 
+#notes:
+
+#pawn, rook, should extend this class
 
 #this is going to serve as a blueprint class for pawn, rook, etc.
 
-class ChessPiece:
+import math
+from abc import ABC, abstractmethod
+
+class ChessPiece(ABC):
      def __init__(self, color, current_square, is_alive=True):
           # True for white, False for black
           self.color = color
@@ -17,7 +23,8 @@ class ChessPiece:
 
      @abstractmethod
      def validMove(target_square):
-          #define a valid move for each piece that extends this class
+          # each piece that extends this class will have its own unique (validMove)
+          # these are the essentially the rules for the game
           
      
      def move(target_square):
@@ -37,8 +44,8 @@ class ChessPiece:
                          return True
                     else:
                          #if that piece is the same, return False, move is invalid
-                         print("Invalid move")
+                         print("invalid move")
                          return False
           else:
-               print("Invalid move")
+               print("invalid move")
                return False
