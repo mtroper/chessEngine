@@ -26,6 +26,7 @@ board[7][6] = "wn"
 board[7][7] = "wr"
 
 
+
 moves = []
 currentSquare = []
 def onPress(square, squareid):
@@ -42,23 +43,45 @@ def onPress(square, squareid):
         if not isValid(col1,row1,col2,row2):
             moveText = "INVALID"
         else:
+            capture = False
+            if board[row1][col1][0] != "s" and board[row2][col2][0] != "s":
+                board[row2][col2] = board[row1][col1]
+                board[row1][col1] = "s"
+                capture = True
+            else:
+                temp1 = board[row1][col1]
+                board[row1][col1] = board[row2][col2]
+                board[row2][col2] = temp1
+                
+            print(board)
             before = int(str(currentSquare[-1].cget("image"))[-1])
             after = int(str(squareid.cget("image"))[-1])
             if before%2 != after%2:
                 difference = -1
                 if before%2 == 1:
                     difference = 1
-                newAfter =  str(squareid.cget("image"))[:-1] + str((after - difference))
-                newBefore = str(currentSquare[-1].cget("image"))[:-1] + str((before - (-difference)))
+                newAfter = str(squareid.cget("image"))[:-1] + str((after - difference))
+                newBefore = str(currentSquare[-1].cget("image"))[:-1] + str((before + difference))
                 squareid.configure(image = newBefore)
-                currentSquare[-1].configure(image = newAfter)
+                if capture and before%2 == 1:
+                    currentSquare[-1].configure(image = whiteImage)
+                elif capture and before%2 == 0:
+                    currentSquare[-1].configure(image = blackImage)
+                else:
+                    currentSquare[-1].configure(image = newAfter)
             else:
-                temp = squareid.cget("image")
-                squareid.configure(image = currentSquare[-1].cget("image"))
-                currentSquare[-1].configure(image = temp)
-            temp1 = board[row1][col1]
-            board[row1][col1] = board[row2][col2]
-            board[row2][col2] = temp1
+                if capture:
+                    temp = currentSquare[-1].cget("image")
+                    if after%2 == 1:
+                        currentSquare[-1].configure(image = whiteImage)
+                    else:
+                        currentSquare[-1].configure(image = blackImage)
+                    squareid.configure(image = temp)
+                else:
+                    temp = squareid.cget("image")
+                    squareid.configure(image = currentSquare[-1].cget("image"))
+                    currentSquare[-1].configure(image = temp)
+            
     else:
         moveText += moves[-1]
         currentSquare.append(squareid)
@@ -66,9 +89,11 @@ def onPress(square, squareid):
 
 
 def isValid(col1,row1,col2,row2):
+    #print(board[row1][col1],board[row2][col2])
     #Case where move on anothe piece of same color
-    if board[row1][col1][0] == board[row2][col2][0]:
+    if board[row1][col1][0] == board[row2][col2][0] or board[row1][col1] == "s":
         return False
+    
     return True
 
 ################## GRAPHICS ####################
@@ -169,7 +194,7 @@ whiteSquare58 = Button(root, image=whiteImage, command = lambda: onPress(("a",6)
 whiteSquare58.grid(row=3,column=1)
 blackSquare18 = Button(root, image=blackImage, command = lambda: onPress(("b",6), blackSquare18), borderwidth = 0, highlightthickness = 0)
 blackSquare18.grid(row=3,column=2)
-whiteSquare11 = Button(root, image=whiteImage, command = lambda: onPress(("d",6), whiteSquare11), borderwidth = 0, highlightthickness= 0)
+whiteSquare11 = Button(root, image=whiteImage, command = lambda: onPress(("c",6), whiteSquare11), borderwidth = 0, highlightthickness= 0)
 whiteSquare11.grid(row=3,column=3)
 blackSquare34 = Button(root, image=blackImage, command = lambda: onPress(("d",6), blackSquare34), borderwidth = 0, highlightthickness = 0)
 blackSquare34.grid(row=3,column=4)
