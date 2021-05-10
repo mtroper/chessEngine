@@ -52,8 +52,6 @@ def onPress(square, squareid):
                 temp1 = board[row1][col1]
                 board[row1][col1] = board[row2][col2]
                 board[row2][col2] = temp1
-                
-            print(board)
             before = int(str(currentSquare[-1].cget("image"))[-1])
             after = int(str(squareid.cget("image"))[-1])
             if before%2 != after%2:
@@ -81,7 +79,12 @@ def onPress(square, squareid):
                     temp = squareid.cget("image")
                     squareid.configure(image = currentSquare[-1].cget("image"))
                     currentSquare[-1].configure(image = temp)
-            
+
+                if row2 == 0 and board[row2][col2] == "wp":
+                    print("promotion white")
+                elif row2 == 7 and board[row2][col2] == "bp":
+                    print("promotion black")
+
     else:
         moveText += moves[-1]
         currentSquare.append(squareid)
