@@ -7,6 +7,9 @@ from Pawn import Pawn
 from Knight import Knight
 
 
+import copy
+
+
 # white pieces
 
 blackPawn1 = Pawn("black", (1,0))
@@ -64,16 +67,44 @@ board =[
     [whiteRook1,whiteKnight1,whiteBishop1,whiteQueen,whiteKing,whiteBishop2,whiteKnight2,whiteRook2],
 ]
 
+
+
+# oppositeColor = color opposite to piece that is moving
+# kingPos = (row,col) of king
+# True if in check, false otherwise
+def isCheck(oppositeColor, kingPos, _board):
+    board = _board
+    for row in board:
+        for piece in row:
+            if piece == 0:
+                continue
+            else:
+                if piece.color == oppositeColor:
+                    if piece.getClass() == "Pawn":
+                        for move in piece.eatMoves():
+                            if move == kingPos:
+                                return True
+                    elif isValid(piece, kingPos,board)[0]:
+                        return True
+                else:
+                    continue
+    return False
+
+# color = color that is moving
+# True if in check, false otherwise
+def isCheckmate(color):
+    pass
+
+# True if checkmate, false otherwise
+
 # piece is a piece class (Rook, Pawn, etc.)
 # target is a tuple (row,col)
-
 #returns tuple:  (isValid, board)
-
 #isValid is a boolean, true if valid, false if not
 def isValid(piece, target, board):
     if piece == 0:
         print("Invalid, no piece selected")
-
+        print(piece)
         return (False, board)
     (row1,col1) = piece.position
     (row2,col2) = target
@@ -109,7 +140,7 @@ def isValid(piece, target, board):
             print("Occupied Square: " + str(board[row2][col2]))
             return (False, board)
 
-    #Case 2: if there are pieces in the way (ignore for knight class, king class, and pawn class)
+    #Case 2: if there are pieces in the way (ignore for knight class and king class)
     if piece.getClass() == "Rook":
         print("Case 2, Rook")
         #if move is to the left
@@ -252,7 +283,10 @@ def isValid(piece, target, board):
             #moving up
             if row2 < row1 and col2 == col1:
                 print("moving up")
-                
+                #occupied square
+                if board[row2][col2] != 0:
+                    print("Invalid, piece in the way")
+                    return (False, board)
                 if target not in piece.moves():
                     print("Invalid, not in piece.moves")
                     print(piece.moves())
@@ -276,6 +310,10 @@ def isValid(piece, target, board):
             #moving up
             if row2 == row1 +1 and col2 == col1:
                 print("moving up")
+                #occupied square
+                if board[row2][col2] != 0:
+                    print("Invalid, piece in the way")
+                    return (False, board)
                 if target not in piece.moves():
                     print("Invalid, not in piece.moves")
                     print(piece.moves())
@@ -302,22 +340,12 @@ def isValid(piece, target, board):
     if piece.getClass() == "Pawn":
         pass
     
-    #Promotion, Check/Checkmate
+    #Promotion
+
+    #Check/Checkmate
 
 
 
-   
-    #sets piece current position to target position
-    piece.position = target
-
-    # no need to change the actual board here
-    # print("piece.position: " + str(piece.position))
-    # board[row2][col2] = piece
-    # print("board[row2][col2]: " + str(board[row2][col2]))
-    # #sets where piece used to be to 0
-    # board[row1][col1] = 0
-    # print("board[row1][col1]: " + str(board[row1][col1]))
-    # print("_________")
     return (True, board)
 
 
@@ -335,18 +363,70 @@ def onPress(board, square, squareid):
         row1 = 8 - int(move[1])
         col2 = ord(move[3]) - 97
         row2 = 8 - int(move[4])
-
-        
         print("row1: " + str(row1) + ", col1: " + str(col1))
         print("row2: " + str(row2) + ", col2: " + str(col2))
 
-        (valid, tempBoard) = isValid(board[row1][col1], (row2,col2), board)
-        board = tempBoard
 
-        if not valid:
+        #declaring some variables
+        piece = board[row1][col1]
+        (valid, tempBoard) = isValid(piece, (row2,col2), board)
+        board = tempBoard
+        inCheck = False
+        checkmated = False
+
+        if valid:
+            testBoard = copy.deepcopy(board)
+            #stores temporary version of target
+            tempSelectedPiece = testBoard[row1][col1]
+
+            #sets piece that was moved to new position
+            tempSelectedPiece.position = (row2,col2)
+            
+            #updates testBoard
+            testBoard[row1][col1] = 0
+            testBoard[row2][col2] = tempSelectedPiece
+
+            #checks if king is in check
+            if piece.color == "white":
+                enemyColor = "black"
+                for row in testBoard:
+                    for _piece in row:
+                        if _piece != 0:
+                            if _piece.getClass() == "King" and _piece.color == "white":
+                                king = _piece
+                                kingPos = king.position
+                            else:
+                                print("why eat king?")
+            else:
+                enemyColor = "white"
+                for row in testBoard:
+                    for _piece in row:
+                        if _piece != 0:
+                            if _piece.getClass() == "King" and _piece.color == "black":
+                                king = _piece
+                                kingPos = king.position
+                            else:
+                                print("why eat king?")
+            
+            if isCheck(enemyColor, kingPos, testBoard):
+                valid = False
+                inCheck = True
+
+        if inCheck:
+            #check if it is checkmate
+
+            
+            print("___________")
+            moveText = "IN CHECK"
+        elif not valid:
             print("___________")
             moveText = "INVALID"
         else:
+            #sets piece that was moved to new position
+            piece.position = (row2,col2)
+
+
+
             capture = False
             if board[row1][col1] != 0 and board[row2][col2] != 0:
                 board[row2][col2] = board[row1][col1]
