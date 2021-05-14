@@ -372,7 +372,6 @@ def onPress(board, square, squareid):
         (valid, tempBoard) = isValid(piece, (row2,col2), board)
         board = tempBoard
         inCheck = False
-        checkmated = False
 
         if valid:
             testBoard = copy.deepcopy(board)
@@ -413,11 +412,69 @@ def onPress(board, square, squareid):
                 inCheck = True
 
         if inCheck:
-            #check if it is checkmate
+            inCheckmate = True
 
-            
-            print("___________")
-            moveText = "IN CHECK"
+            allPieces = []
+            #check if it is checkmate
+            if enemyColor == "white" :
+                for row in board:
+                    for poopoo in row:
+                        if poopoo != 0:
+                            if poopoo.color == "black":
+                                allPieces.append(poopoo)
+            else:
+                for row in board:
+                    for poopoo in row:
+                        if poopoo != 0:
+                            if poopoo.color == "white":
+                                allPieces.append(poopoo)
+
+
+            for poop in allPieces:
+                for move in poop.moves():
+                    (poopRow,poopCol) = poop.position
+                    (targetRow,targetCol) = move
+                    tempBoard1 = copy.deepcopy(board)
+
+                    (valid, tempBoard) = isValid(poop, move, tempBoard1)
+                    tempBoard = tempBoard1
+                    inCheck = False
+
+                    if valid:
+                        testBoard = copy.deepcopy(board)
+                        tempSelectedPiece = testBoard[poopRow][poopCol]
+                        tempSelectedPiece.position = move
+                        testBoard[poopRow][poopCol] = 0
+                        testBoard[targetRow][targetCol] = tempSelectedPiece
+                        if poop.color == "white":
+                            enemyColor = "black"
+                            for row in testBoard:
+                                for _piece in row:
+                                    if _piece != 0:
+                                        if _piece.getClass() == "King" and _piece.color == "white":
+                                            _king = _piece
+                                            kingPos = _king.position
+                                        else:
+                                            print("why eat king?")
+                        else:
+                            enemyColor = "white"
+                            for row in testBoard:
+                                for _piece in row:
+                                    if _piece != 0:
+                                        if _piece.getClass() == "King" and _piece.color == "black":
+                                            _king = _piece
+                                            kingPos = _king.position
+                                        else:
+                                            print("why eat king?")
+                        
+                        if not isCheck(enemyColor, kingPos, testBoard):
+                            inCheckmate = False
+            if inCheckmate:
+                print("___________")
+                moveText = "CHECKMATE MY GRINGO"
+            else:
+                print("___________")
+                moveText = "IN CHECK"
         elif not valid:
             print("___________")
             moveText = "INVALID"
